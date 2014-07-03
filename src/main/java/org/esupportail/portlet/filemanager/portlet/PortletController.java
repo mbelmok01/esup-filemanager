@@ -59,6 +59,7 @@ public class PortletController {
 	public static final String STANDARD_VIEW = "standard";
 	public static final String MOBILE_VIEW = "mobile";
 	public static final String WAI_VIEW = "wai";
+	public static final String RESPONSIVE_VIEW = "responsive";
 	
 	@Autowired
 	protected IServersAccessService serverAccess;
@@ -93,7 +94,10 @@ public class PortletController {
     protected ModelAndView renderView(RenderRequest request, RenderResponse response) throws Exception {
     	this.init(request);
         final PortletPreferences prefs = request.getPreferences();
-    	String defaultPortletView = prefs.getValue(PREF_PORTLET_VIEW, STANDARD_VIEW);
+    	// set default view to standarview
+    	// String defaultPortletView = prefs.getValue(PREF_PORTLET_VIEW, STANDARD_VIEW);
+    	// set default view to responsiveview
+    	String defaultPortletView = prefs.getValue(PREF_PORTLET_VIEW, RESPONSIVE_VIEW);
     	String[] prefsDefaultPathes = prefs.getValues(PREF_DEFAULT_PATH, null);
     	if(log.isDebugEnabled()) {
     		log.debug(PREF_DEFAULT_PATH + " preference : ");
@@ -120,6 +124,8 @@ public class PortletController {
 	    		return this.browseMobile(request, response, defaultPath);
 	    	else if(WAI_VIEW.equals(defaultPortletView))
 	    		return this.browseWai(request, response, defaultPath, null);
+	    	else if(RESPONSIVE_VIEW.equals(defaultPortletView))
+	    		return this.browseResponsive(request, response, defaultPath);
 	    	else
 	    		return this.browseStandard(request, response, defaultPath);
 	    }
@@ -164,6 +170,24 @@ public class PortletController {
 		model = browse(dir);
         return new ModelAndView("view-portlet-mobile", model);
     }
+
+    // responsive view
+    @RequestMapping(value = {"VIEW"}, params = {"action=browseResponsive"})
+    public ModelAndView browseResponsive(RenderRequest request, RenderResponse response, String dir) {	
+    	this.init(request);
+        final PortletPreferences prefs = request.getPreferences();
+		boolean useDoubleClick = "true".equals(prefs.getValue(PREF_USE_DOUBLE_CLICK, "true")); 
+    	boolean useCursorWaitDialog = "true".equals(prefs.getValue(PREF_USE_CURSOR_WAIT_DIALOG, "false"));
+    	
+		ModelMap model = new ModelMap();
+		model.put("useDoubleClick", useDoubleClick);
+		model.put("useCursorWaitDialog", useCursorWaitDialog);
+		if(dir == null)
+			dir = "";
+		model.put("defaultPath", dir);
+    	return new ModelAndView("view-portlet-responsive", model);
+    }
+
 	
 	@RequestMapping(value = {"VIEW"}, params = {"action=browseWai"})
     public ModelAndView browseWai(RenderRequest request, RenderResponse response,
@@ -182,7 +206,8 @@ public class PortletController {
 			if(this.serverAccess.formAuthenticationRequired(decodedDir, userParameters)) {
 				ListOrderedMap parentPathes = pathEncodingUtils.getParentsEncPathes(decodedDir, null, null);
 				// we want to get the (last-1) key of sortedmap "parentPathes"
-				String parentDir = (String)parentPathes.get(parentPathes.size()-2);				model = new ModelMap("currentDir", dir);
+				String parentDir = (String)parentPathes.get(parentPathes.size()-2);
+				model = new ModelMap("currentDir", dir);
 				model.put("parentDir", parentDir);
 				model.put("username", this.serverAccess.getUserPassword(decodedDir, userParameters).getUsername());
 				model.put("password", this.serverAccess.getUserPassword(decodedDir, userParameters).getPassword());

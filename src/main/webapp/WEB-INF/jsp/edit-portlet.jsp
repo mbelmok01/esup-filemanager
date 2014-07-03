@@ -62,7 +62,12 @@
 						</li>
 						<li>
 							<input type="radio" name="viewMode" value="mobile" ${viewMode == 'mobile'? 'checked="checked"' : ''}/><spring:message code="edit.viewMode.mobile"/>
-						</li>									
+						</li>
+
+						<li>
+							<input type="radio" name="viewMode" value="responsive" ${viewMode == 'responsive'? 'checked="checked"' : ''}/><spring:message code="edit.viewMode.responsive"/>
+						</li>
+
 					</ul>
 				</fieldset>
 			</c:if>
